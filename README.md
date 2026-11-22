@@ -92,7 +92,7 @@ Slope magnitude and curvature use input-range and simulator-QoI normalization, i
 - `results/study/*_data_*.npz`: parameter datasets and training-pool indices; solutions regenerate analytically.
 - `results/study/*_effects.npz`, `*_oracle.npz`: individual and aggregate effect curves.
 - `results/study/figures/`: fit diagnostics, effects, ICE and training histories.
-- `presentation/presentation.pdf`: seven slides intended for five minutes.
+- `presentation/presentation.pdf`: nine main slides for five minutes plus three backup slides.
 
 `physics.py` implements data generation, `operators.py` implements the architectures, `study.py` trains and computes explanations, and `report.py` builds figures and slides. The original template utilities remain available for its regression smoke tests.
 

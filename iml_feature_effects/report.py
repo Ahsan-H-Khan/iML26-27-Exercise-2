@@ -1,7 +1,6 @@
 """Build figures, numeric summaries and the five-minute presentation from saved runs."""
 
 import json
-import textwrap
 from pathlib import Path
 
 import matplotlib
@@ -10,13 +9,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.backends.backend_pdf import PdfPages
 
-COLORS = {"underfit": "#b45309", "well_fit": "#047857", "overfit": "#7c3aed"}
+from .presentation import build_presentation
+from .visual_style import COLORS, INK, PLOT_STYLE, STYLES
+
 LABELS = {"burgers": "FNO on viscous Burgers", "oscillator": "Laplace operator on forced oscillator"}
 
 
-def build(root=Path("results/study")):
+def _build(root):
     figures = root / "figures"
     figures.mkdir(exist_ok=True)
     scores = pd.read_csv(root / "scores.csv")
@@ -60,10 +60,10 @@ def build(root=Path("results/study")):
         fig, axes = plt.subplots(1, 2, figsize=(12, 4), layout="constrained")
         for j, method in enumerate(["pdp", "ale"]):
             x = ref["grid"] if method == "pdp" else ref["edges"]
-            axes[j].plot(x, ref[method], color="black", lw=2, label="Simulator")
+            axes[j].plot(x, ref[method], color=INK, lw=3, label="Simulator")
             for regime, color in COLORS.items():
                 e = np.load(root / f"{system}_{regime}_effects.npz")[method]
-                axes[j].plot(x, e.mean(0), color=color, label=regime.replace("_", " "))
+                axes[j].plot(x, e.mean(0), color=color, ls=STYLES[regime], lw=2, label=regime.replace("_", " "))
                 if len(e) > 1:
                     axes[j].fill_between(
                         x, e.mean(0) - e.std(0, ddof=1), e.mean(0) + e.std(0, ddof=1), color=color, alpha=0.15
@@ -95,102 +95,13 @@ def build(root=Path("results/study")):
         fig.savefig(figures / f"{system}_learning.png", dpi=160)
         plt.close(fig)
     (root / "regime_checks.json").write_text(json.dumps(checks, indent=2))
-    # Presentation is generated from actual results; no assumed roughness ordering.
-    target = Path("presentation/presentation.pdf")
-    target.parent.mkdir(exist_ok=True)
-    with PdfPages(target) as pdf:
-
-        def slide(title, paragraphs=None, image=None):
-            fig = plt.figure(figsize=(13.33, 7.5), facecolor="#f8fafc")
-            fig.text(0.05, 0.92, title, fontsize=25, weight="bold", color="#0f172a")
-            if image:
-                ax = fig.add_axes([0.035, 0.13, 0.93, 0.7])
-                ax.imshow(plt.imread(image))
-                ax.axis("off")
-            if paragraphs:
-                y = 0.79 if image is None else 0.11
-                for para in paragraphs:
-                    lines = textwrap.wrap(para, 105)
-                    fig.text(0.055, y, "\n".join(lines), fontsize=17 if image is None else 12, va="top")
-                    y -= 0.12 + 0.035 * (len(lines) - 1)
-            pdf.savefig(fig)
-            plt.close(fig)
-
-        slide(
-            "Can accurate-looking feature effects be misleading?",
-            [
-                "Feature effects from underfit to overfit neural operators",
-                "Two simulated datasets: periodic viscous Burgers and a forced, damped harmonic oscillator.",
-                (
-                    "FNO and a custom causal pole/residue Laplace operator predict complete functions; explanations "
-                    "target solution RMS."
-                ),
-                "Question: how do effect accuracy and repeatability change with model fit?",
-            ],
-        )
-        slide(
-            "Controlled experiment and simulator references",
-            [
-                (
-                    "Each refit uses the same 48 training functions for all three capacity regimes. Validation, "
-                    "explanation background and test each contain 128 independent functions."
-                ),
-                (
-                    "Training resamples are paired across regimes. Initialization also changes with refit; bands "
-                    "describe their combined variation, not confidence intervals."
-                ),
-                (
-                    "ICE and PDP use 41 shared feature values. ALE uses eight shared quantile bins. Every "
-                    "intervention reconstructs all input channels."
-                ),
-                (
-                    "Analytic oscillator and Cole-Hopf Burgers solutions provide method-matched reference effects. "
-                    "No target noise is added."
-                ),
-            ],
-        )
-        for system in LABELS:
-            slide(
-                LABELS[system] + ": measured fit",
-                image=figures / f"{system}_fit.png",
-                paragraphs=[
-                    "Model selection uses validation; test performance is reported after selection. "
-                    "Bars show mean and SD across refits."
-                ],
-            )
-            m = metrics[(metrics.system == system) & (metrics.method == "pdp")].groupby("regime").effect_nrmse.mean()
-            detail = (
-                "PDP normalized effect errors: " + ", ".join(f"{r.replace('_', ' ')} {m[r]:.3f}" for r in COLORS) + "."
-            )
-            slide(LABELS[system] + ": feature effects", image=figures / f"{system}_effects.png", paragraphs=[detail])
-        bm = (
-            metrics[(metrics.system == "burgers") & (metrics.method == "pdp")].groupby("regime").mean(numeric_only=True)
-        )
-        evidence = (
-            f"Burgers PDP: overfit effect error {bm.loc['overfit', 'effect_nrmse']:.3f} "
-            f"versus well-fit {bm.loc['well_fit', 'effect_nrmse']:.3f}; refit dispersion "
-            f"{bm.loc['overfit', 'refit_dispersion']:.3f} versus {bm.loc['well_fit', 'refit_dispersion']:.3f}. "
-            "Greater stability accompanies worse fidelity in this comparison."
-        )
-        slide(
-            "Interpretation and practical limits",
-            [
-                evidence,
-                (
-                    "Underfitting understates the viscosity effect in Burgers and flattens the oscillator resonance "
-                    "contrast near frequency 2. Such explanations could underestimate physical sensitivity."
-                ),
-                (
-                    "Slope and curvature describe response shape. Real resonance and ALE binning can create "
-                    "curvature; smoothness alone does not establish correctness."
-                ),
-                (
-                    "These are restricted input-function families and two different architectures. Three refits "
-                    "provide descriptive evidence, not a causal architecture comparison or calibrated uncertainty."
-                ),
-            ],
-        )
+    build_presentation(root)
     return checks
+
+
+def build(root=Path("results/study")):
+    with plt.rc_context(PLOT_STYLE):
+        return _build(root)
 
 
 if __name__ == "__main__":
