@@ -14,6 +14,8 @@ uv run python -m iml_feature_effects.sensitivity
 uv run python -m iml_feature_effects.report
 ```
 
+Presentation generation also requires `pdflatex` with Beamer, TikZ, amsmath, booktabs and Latin Modern fonts (a TeX Live or equivalent installation). The selected cloud environment already provides these. The editable deck is `presentation/presentation.tex`; vector plot assets and measured settings are generated in `presentation/generated/`.
+
 The full experiment trains 18 compact models on CPU. Checkpoints resume completed configurations; use `--output results/new_run` for a fresh experiment. Do not mix checkpoints from different code revisions. A shorter smoke experiment can use `--repeats 1 --steps-scale 0.05 --output results/smoke`; it does not establish fit regimes. Sensitivity and reporting modules default to `results/study`.
 
 In a restricted container, set writable cache locations, for example `UV_CACHE_DIR=/tmp/iml-uv` and `MPLCONFIGDIR=/tmp/iml-mpl`. No dataset download is needed.
@@ -92,7 +94,7 @@ Slope magnitude and curvature use input-range and simulator-QoI normalization, i
 - `results/study/*_data_*.npz`: parameter datasets and training-pool indices; solutions regenerate analytically.
 - `results/study/*_effects.npz`, `*_oracle.npz`: individual and aggregate effect curves.
 - `results/study/figures/`: fit diagnostics, effects, ICE and training histories.
-- `presentation/presentation.pdf`: nine main slides for five minutes plus three backup slides.
+- `presentation/presentation.pdf`: eleven main slides for five minutes plus three backup slides, compiled from editable LaTeX Beamer source.
 
 `physics.py` implements data generation, `operators.py` implements the architectures, `study.py` trains and computes explanations, and `report.py` builds figures and slides. The original template utilities remain available for its regression smoke tests.
 
