@@ -24,3 +24,6 @@ data/*
 # Experiment results (scripts/run_experiment.py)
 results/*
 !results/.gitkeep
+
+# Checked operator-study outputs, including trained CPU weights
+!results/study/

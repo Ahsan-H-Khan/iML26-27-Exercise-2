@@ -1,0 +1,60 @@
+{
+  "repeats": 3,
+  "steps_scale": 1.0,
+  "configurations": {
+    "underfit": {
+      "width": 2,
+      "modes": 1,
+      "depth": 1,
+      "steps": 650,
+      "wd": 0.1
+    },
+    "well_fit": {
+      "width": 16,
+      "modes": 8,
+      "depth": 2,
+      "steps": 1400,
+      "wd": 0.002
+    },
+    "overfit": {
+      "width": 48,
+      "modes": 16,
+      "depth": 3,
+      "steps": 2200,
+      "wd": 0.0
+    }
+  },
+  "source_sha256": {
+    "physics.py": "d719eab7aba95a43a118849a16ee489c667eba7cf81775fb52c61695928bb034",
+    "sensitivity.py": "6325fa855e4a6a15941a061f57dcb01c58b1fb653bc5f041c3320b944b9a0acd",
+    "operators.py": "f65a0f19e577c4edf7828dbeede83b479f369baf755aec134ece11ffb1502b4c",
+    "data.py": "1805ed139e620ca188a7f7f956c6db94526d5a065a94b908b6f15cc039667495",
+    "models.py": "8e77fd2fa4a7479ffd4989871c12974c815d1ed42a2217345bacd1b746b65016",
+    "report.py": "b71a00fd857bf1a2f904ba027730046374c9a82847e3f546dba8d9bbdf7b0189",
+    "evaluate.py": "280a27c54260a0f84900117a667f3ec563916edb0a3e1c60a0f67dca0932946a",
+    "study.py": "6b9c0d309d9b4fe5782d2de31fa150cc94d0b1d15554d90e047243a3bcf17c54",
+    "__init__.py": "3938e48e8fac692a26ad4e4c427ac1ce7d441490a3d3b13e3838eb4fa2d7dcee",
+    "effects.py": "fd1367dd2b9e0d694b57e61cc8529053e2b46812adbc5fd8a591ee5f8f04e29d"
+  },
+  "torch": "2.15.0+cpu",
+  "numpy": "2.5.5",
+  "oscillator_overfit": {
+    "width": 48,
+    "modes": 16,
+    "depth": 3,
+    "steps": 3500,
+    "wd": 0.0,
+    "cosine": true
+  },
+  "oscillator_well_fit": {
+    "width": 8,
+    "modes": 8,
+    "depth": 1,
+    "steps": 3500,
+    "wd": 0.0,
+    "linear": true
+  },
+  "final_test_seed": 50,
+  "pilot_test_seed": 40,
+  "note": "Paired training resamples; one matched initialization seed per resample. No independent seed factorial."
+}

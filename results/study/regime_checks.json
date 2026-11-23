@@ -1,0 +1,16 @@
+{
+  "burgers": {
+    "underfit_train_above_well_fit": true,
+    "underfit_validation_above_well_fit": true,
+    "overfit_train_below_well_fit": true,
+    "overfit_validation_above_well_fit": true,
+    "overfit_validation_training_ratio": 45.37308806477513
+  },
+  "oscillator": {
+    "underfit_train_above_well_fit": true,
+    "underfit_validation_above_well_fit": true,
+    "overfit_train_below_well_fit": true,
+    "overfit_validation_above_well_fit": true,
+    "overfit_validation_training_ratio": 4.305992064043103
+  }
+}

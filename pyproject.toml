@@ -9,15 +9,18 @@ description     = "iML 26/27 Exercise 2: feature effect explanations from underf
 readme          = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "numpy>=1.26",
+    "numpy>=2.0",
     "pandas>=2.0",
     "scikit-learn>=1.4",
     "matplotlib>=3.8",
+    "torch>=2.5",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
+    "scipy>=1.12",
+    "ruff>=0.8",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -30,3 +33,11 @@ line-length    = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
