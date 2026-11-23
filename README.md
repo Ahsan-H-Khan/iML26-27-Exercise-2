@@ -11,6 +11,7 @@ uv sync --locked --extra dev
 uv run pytest -q
 uv run python scripts/run_experiment.py --repeats 3
 uv run python -m iml_feature_effects.sensitivity
+uv run python -m iml_feature_effects.co12
 uv run python -m iml_feature_effects.report
 ```
 
@@ -89,12 +90,16 @@ Slope magnitude and curvature use input-range and simulator-QoI normalization, i
 - `results/study/scores.csv`, `score_summary.csv`: prediction errors and aggregate results.
 - `results/study/effect_metrics.csv`, `effect_summary.csv`: effect error, shape metrics and refit dispersion.
 - `results/study/sensitivity.csv`: grid and bin sensitivity.
+- `results/study/co12_metrics.csv`, `co12_summary.csv`: the four-property audit for all 18 saved models.
+- `results/study/co12_consistency_checks.csv`, `co12_reference.csv`: formal controls and simulator baselines.
+- `results/study/co12_hypotheses.csv`: direct comparison of the proposed fit-regime hypotheses with observed results.
+- `results/study/co12_manifest.json`, `co12_curves.npz`: audit settings, input hashes and interaction/perturbation curves.
 - `results/study/*_history.csv`: optimization histories.
 - `results/study/*.pt`: trained CPU model states, configurations and target scales.
 - `results/study/*_data_*.npz`: parameter datasets and training-pool indices; solutions regenerate analytically.
 - `results/study/*_effects.npz`, `*_oracle.npz`: individual and aggregate effect curves.
 - `results/study/figures/`: fit diagnostics, effects, ICE and training histories.
-- `presentation/presentation.pdf`: eleven main slides for five minutes plus three backup slides, compiled from editable LaTeX Beamer source.
+- `presentation/presentation.pdf`: twelve main slides for five minutes plus four backup slides, presented by GUnit, compiled from editable LaTeX Beamer source.
 
 `physics.py` implements data generation, `operators.py` implements the architectures, `study.py` trains and computes explanations, and `report.py` builds figures and slides. The original template utilities remain available for its regression smoke tests.
 
@@ -120,6 +125,37 @@ For Burgers PDP, the overfit model has larger effect error (0.03264 versus 0.018
 The initial hypothesis that overfitting necessarily causes jagged or unstable effects is not supported uniformly. In the first Burgers refit, the overfit PDP is smoother by the measured curvature statistic than the well-fit PDP despite worse effect fidelity. Underfit explanations also vary substantially across initializations and training subsets.
 
 Doubling the PDP grid from 41 to 81 points preserves the first-refit effect-error ordering on both systems. Doubling ALE bins from 8 to 16 also preserves that ordering, but changes numerical effect errors and reduces occupancy from 16 to 8 instances per bin. Curvature and ALE discretization should therefore remain descriptive evidence. The sensitivity check covers the first refit, not all resamples.
+
+## Four property Co-12 audit
+
+We focus on Consistency, Continuity, Covariate complexity and Coherence from [Nauta et al. (2023), Co-12](https://doi.org/10.1145/3583558). The taxonomy distinguishes explanation repeatability from robustness to input changes; interaction analysis here is a proxy for one aspect of covariate complexity. These diagnostics do not measure human comprehensibility or define a universal quality score.
+
+The audit runs on all 18 saved checkpoints without retraining. It uses the same 128 background instances and 41 feature values. It also uses 32 physically constrained probe instances. New audit tests verify equivalence of permuted networks, known additive/multiplicative interactions and the physical laws.
+
+| Property | Operational measurement | Interpretation |
+|---|---|---|
+| Consistency | Repeat full ICE/PDP/ALE calculations; compare with a mathematically equivalent hidden-channel permutation. Report resampling/initialization dispersion separately. | All 18 models pass fixed-input and implementation controls. Refit dispersion describes a different stability question. |
+| Continuity | Perturb each nuisance parameter by 1% of its range, preserving the primary-feature grid; measure centered-ICE change per normalized input distance. Compare PDP curvature with the solver. | Local shape gain close to the solver is desirable; low sensitivity can also reflect an attenuated explanation. Curvature alone is not continuity. |
+| Covariate complexity | Double-center ICE and compare the interaction residual H = centered ICE minus PDP with its simulator counterpart. | Report interaction strength relative to the oracle and normalized residual error. True physical interactions should not be treated as noise. |
+| Coherence | Compare ICE slope directions where oracle normalized slope magnitude exceeds 0.01; test a physical equality across the feature grid. | Domain behavior is checked against physics, separately from explanation repeatability. |
+
+For the physical equalities, Burgers uses a pure-sine initial profile (second coefficient zero) and a phase shift of pi/4, equivalent to 8 of the 64 grid cells. Its spatial RMS must be translation invariant. The oscillator jointly scales forcing amplitude and initial displacement by 1.2, so linearity requires the output and its RMS to scale by 1.2. All probes stay in the parameter ranges. The oracle normalized residuals are 8.6e-10 and 3.9e-16, respectively.
+
+All curve dispersions, interaction residuals and law errors use the simulator QoI standard deviation as a common scale. Local distances use normalized physical parameter ranges. Ratios compare each metric with its own solver baseline, not with an arbitrary quality threshold. The model reparameterization tolerance is 1e-4 on this scale; observed explanation differences are below 2e-6, with exact repeatability on repeated calls.
+
+### Comparison with the proposed hypotheses
+
+| Hypothesis | Burgers FNO | Oscillator LNO |
+|---|---|---|
+| Underfit global curves are stable across refits | Not observed: underfit had the largest dispersion | Not observed: underfit had the largest dispersion |
+| Underfit misses curvature and interactions | Observed: curvature 0.45 times and interaction strength 0.23 times the solver | Observed: curvature 0.65 times and interaction strength 0.59 times the solver |
+| Overfit explanations are more variable than well-fit | Not observed: both PDP and ICE refit dispersion were smaller | Observed: both PDP and ICE refit dispersion were larger |
+| Overfit produces jaggedness and inflated interactions | No marked inflation: curvature 0.77 times and interaction strength 0.83 times the solver | No marked inflation: curvature 1.01 times and interaction strength 0.99 times the solver |
+| Well-fit best matches domain behavior | Lowest phase-invariance residual, 0.0251; all regimes retain the viscosity slope direction | Lowest scaling residual, 0.000270; ICE slope mismatch 0.02% versus 7.72% underfit and 0.47% overfit |
+
+The table records descriptive outcomes of these three paired refits, not universal rules about fit regimes. The well-fit models have the smallest mean interaction residual error in both systems, but not every stability/sensitivity metric is best for the well-fit configuration. In particular, the overfit Burgers PDP is more stable than the well-fit PDP while having worse effect fidelity. The 41-point grid and 1% perturbations do not rule out behavior at other scales. RMS composition itself can introduce interaction effects even when a field-prediction stack is linear.
+
+Run `uv run python -m iml_feature_effects.co12` to recompute the audit. Reporting verifies source/input hashes and reuses complete audit outputs only when the implementation and saved model/effect files match. The audit expects the completed three-refit study. The PDF presents separate observed comparison tables for Burgers and the oscillator, with formal metric definitions in backup.
 
 ## Interpretation limits
 

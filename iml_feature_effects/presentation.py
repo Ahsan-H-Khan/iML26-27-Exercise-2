@@ -15,6 +15,7 @@ import pandas as pd
 import torch
 from matplotlib.lines import Line2D
 
+from .co12 import ensure, latex_rows
 from .operators import Operator
 from .physics import coordinates, encode, sample, solve
 from .visual_style import BLUE, COLORS, DISPLAY, INK, MUTED, PLOT_STYLE, STYLES, TEAL
@@ -141,6 +142,7 @@ def _assets(root, destination):
 
 def _values(root, destination):
     """Numeric TeX rows come from the actual checkpoints and recorded metrics."""
+    ensure(root)
     scores = pd.read_csv(root / "scores.csv")
     means = scores.groupby(["system", "regime", "split"]).rel_l2.mean() * 100
     lines = []
@@ -176,6 +178,8 @@ def _values(root, destination):
             counts.append(f"{model} & {label} & {variant} & {dof:,}" + r" \\")
     macro("ConfigRows", "\n".join(rows))
     macro("CountRows", "\n".join(counts))
+    macro("CoBurgersRows", latex_rows(root, "burgers"))
+    macro("CoOscillatorRows", latex_rows(root, "oscillator"))
     destination.write_text("\n".join(lines) + "\n")
 
 
@@ -210,18 +214,19 @@ def build_presentation(root=Path("results/study"), target=Path("presentation/pre
         shutil.copyfile(output, target)
     renderer = shutil.which("pdftoppm")
     if renderer:
-        subprocess.run(
-            [
-                renderer,
-                "-f",
-                "2",
-                "-singlefile",
-                "-scale-to",
-                "1600",
-                "-png",
-                str(target),
-                str(target.with_name("preview")),
-            ],
-            check=True,
-            capture_output=True,
-        )
+        for page, name in [(2, "preview"), (11, "co12-preview")]:
+            subprocess.run(
+                [
+                    renderer,
+                    "-f",
+                    str(page),
+                    "-singlefile",
+                    "-scale-to",
+                    "1600",
+                    "-png",
+                    str(target),
+                    str(target.with_name(name)),
+                ],
+                check=True,
+                capture_output=True,
+            )

@@ -24,7 +24,7 @@
 \setbeamerfont{block title}{size=\normalsize,series=\bfseries}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{headline}{\textcolor{blue}{\rule{\paperwidth}{1.7mm}}}
-\setbeamertemplate{footline}{\hspace{5mm}\scriptsize\color{muted}iML 26/27\quad Feature effects in neural operators\hfill\insertframenumber\hspace{5mm}\vspace{3mm}}
+\setbeamertemplate{footline}{\hspace{5mm}\scriptsize\color{muted}GUnit\quad iML 26/27\quad Feature effects in neural operators\hfill\insertframenumber\hspace{5mm}\vspace{3mm}}
 \setbeamersize{text margin left=6mm,text margin right=6mm}
 \setlength{\abovedisplayskip}{4pt}
 \setlength{\belowdisplayskip}{4pt}
@@ -38,11 +38,12 @@
  temporal/.style={box,draw=teal,fill=teal!6}}
 \input{generated/values.tex}
 \title{Can we trust a model's explanations?}
-\author{Ahsan H. Khan}
+\author{GUnit}
 \begin{document}
 
 % MAIN 1 -- 15 seconds
 \begin{frame}{Learn a solution operator, then explain it}
+{\small\textbf{Presented by GUnit}}\par\vspace{1mm}
 \goal{Predict a complete physical solution from an input function and its parameters.}
 \begin{center}
 \begin{tikzpicture}[node distance=5mm]
@@ -59,7 +60,7 @@
 \key{We compare underfit, well-fit and overfit configurations on the same physical task.}
 \end{frame}
 
-% MAIN 2 -- 25 seconds
+% MAIN 2 -- 20 seconds
 \begin{frame}{FNO task: initial flow $\longrightarrow$ later flow}
 \goal{Learn the periodic Burgers solution map at final time $T=1$.}
 \begin{columns}[T,onlytextwidth]
@@ -83,7 +84,7 @@
 \key{The FNO predicts the whole spatial profile. We later explain the effect of viscosity.}
 \end{frame}
 
-% MAIN 3 -- 25 seconds
+% MAIN 3 -- 20 seconds
 \begin{frame}{FNO: Fourier neural operator}
 \goal{Learn how spatial Fourier modes interact to predict the later solution.}
 \begin{center}
@@ -112,7 +113,7 @@ v_{\ell+1}=\sigma\!\left(W_\ell v_\ell+
 \smallnote{$v_\ell$ denotes hidden feature curves; $\sigma$ is GELU. Several layers sit between input lifting and output projection.}
 \end{frame}
 
-% MAIN 4 -- 25 seconds
+% MAIN 4 -- 20 seconds
 \begin{frame}{LNO task: forcing history $\longrightarrow$ displacement}
 \goal{Learn the forced, damped oscillator response over $0\leq t\leq12$.}
 \begin{columns}[T,onlytextwidth]
@@ -136,7 +137,7 @@ v_{\ell+1}=\sigma\!\left(W_\ell v_\ell+
 \key{The LNO predicts the whole response history. We later explain forcing frequency.}
 \end{frame}
 
-% MAIN 5 -- 25 seconds
+% MAIN 5 -- 20 seconds
 \begin{frame}{LNO: Laplace neural operator (custom)}
 \goal{Learn decaying oscillatory memory: how past forcing affects the current response.}
 \begin{center}
@@ -242,20 +243,60 @@ Regime & Training & Final test & Training & Final test\\\midrule
 \key{Underfit curves understate viscosity sensitivity and the contrast near resonance.}
 \end{frame}
 
-% MAIN 11 -- 30 seconds
-\begin{frame}{Repeatable explanations can still be biased}
-\begin{columns}[T,onlytextwidth]
-\column{.66\textwidth}\includegraphics[width=\textwidth]{generated/stability.pdf}
-\column{.31\textwidth}\small
-\textbf{Burgers PDP}\\[2mm]
-The overfit model is \textbf{more stable}, but \textbf{less accurate} against the simulator.\\[3mm]
-Check prediction error, explanation accuracy and repeatability together.
-\end{columns}
-\smallnote{Three refits and restricted function families provide descriptive evidence. Different architectures on different systems do not identify an architecture advantage.}
-\key{Physical reference solutions reveal errors that smooth, stable curves can hide.}
+% MAIN 11 -- 25 seconds
+\begin{frame}{Co-12 audit: observed Burgers FNO behavior}
+\small Determinism and equivalent-implementation checks pass for every regime.\\
+\scriptsize Refit stability below is an additional proxy; values average three refits.
+\vspace{2mm}
+\begingroup\scriptsize\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.17}
+\begin{tabular}{@{}p{.18\textwidth}p{.25\textwidth}p{.25\textwidth}p{.25\textwidth}@{}}\toprule
+Co-property & \textcolor{slate}{\textbf{Underfit}} & \textcolor{blue}{\textbf{Well-fit}} & \textcolor{coral}{\textbf{Overfit}}\\\midrule
+\CoBurgersRows
+\bottomrule\end{tabular}\endgroup
+\smallnote{Reference = simulator. Local gain: ICE change under 1\%-range nuisance shifts. Interaction strength: nonparallel ICE variation. Law: RMS invariance under a grid-aligned translation of a pure sine profile.}
+\key{Overfit is most repeatable here; the well-fit model still has lower explanation error.}
+\end{frame}
+
+% MAIN 12 -- 25 seconds
+\begin{frame}{Co-12 audit: observed oscillator LNO behavior}
+\small Same controls and metrics; compare against the same simulator reference.\\
+\scriptsize The four properties are operational diagnostics, not a universal quality score.
+\vspace{2mm}
+\begingroup\scriptsize\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.17}
+\begin{tabular}{@{}p{.18\textwidth}p{.25\textwidth}p{.25\textwidth}p{.25\textwidth}@{}}\toprule
+Co-property & \textcolor{slate}{\textbf{Underfit}} & \textcolor{blue}{\textbf{Well-fit}} & \textcolor{coral}{\textbf{Overfit}}\\\midrule
+\CoOscillatorRows
+\bottomrule\end{tabular}\endgroup
+\smallnote{Law: scaling both forcing and initial displacement by 1.2 must scale solution RMS by 1.2. Law and interaction residuals use simulator-QoI SD normalization. Co-12: \href{https://doi.org/10.1145/3583558}{Nauta et al. (2023)}.}
+\key{Well-fit has the best interaction fidelity and coherence; overfit still preserves most structure.}
 \end{frame}
 
 \appendix
+\begin{frame}{Backup: four Co-12 diagnostics}
+\scriptsize Taxonomy: \href{https://doi.org/10.1145/3583558}{Nauta et al. (2023), Co-12}. We use four selected properties.
+\begin{columns}[T,onlytextwidth]
+\column{.49\textwidth}
+\begin{block}{Consistency: repeatability}
+\scriptsize Repeat the explanation; permute hidden channels to obtain an equivalent network. All 18 models pass. Refit stability is reported separately:
+\[D=\frac{\operatorname{mean}_{m}\operatorname{SD}_r(P_r(z_m))}{\sigma_Q}.\]
+\end{block}
+\begin{block}{Continuity: small input shifts}
+\scriptsize Perturb nuisance inputs by 1\% of their ranges. Compare the change of centered ICE with the simulator, per normalized input distance. Curvature is descriptive, not a proof of continuity.
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Covariate complexity: interactions}
+\scriptsize Center ICE over the grid, then remove PDP:
+\[H_{im}=\operatorname{cICE}_i(z_m)-\operatorname{PDP}(z_m).\]
+\scriptsize Report $\operatorname{RMS}(H)/\sigma_Q$ relative to the solver and residual error. Human comprehensibility is not tested.
+\end{block}
+\begin{block}{Coherence: physical alignment}
+\scriptsize Check ICE slope directions against nonnegligible oracle slopes, plus translation invariance (Burgers) or joint input scaling (oscillator).
+\end{block}
+\end{columns}
+\smallnote{$\sigma_Q$ is simulator QoI standard deviation on the fixed background.}
+\end{frame}
+
+
 \begin{frame}{Backup: physical inputs versus learned parameters}
 \begin{tabular}{p{.17\textwidth}p{.36\textwidth}p{.36\textwidth}}\toprule
 & \textbf{Burgers FNO} & \textbf{Oscillator LNO}\\\midrule

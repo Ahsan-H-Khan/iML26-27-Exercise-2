@@ -1,0 +1,3 @@
+system,interaction_strength,local_shape_gain,pdp_curvature,physical_law,law_residual,peak_parameter
+burgers,0.05020714665297635,0.13880604695191026,0.31775007630949287,phase_translation_at_zero_second_mode,8.618622212478925e-10,0.06
+oscillator,0.30599162285619663,0.7579907263145972,43.95888323589103,joint_forcing_initial_condition_scaling,3.935637579549109e-16,1.925

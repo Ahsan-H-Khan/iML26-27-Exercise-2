@@ -1,0 +1,11 @@
+system,hypothesis,observation,conclusion
+burgers,Underfit has stable global explanations across refits,Underfit PDP SD 0.068328; well-fit 0.010487; overfit 0.0073504.,Not observed: underfit had the largest refit dispersion.
+burgers,Overfit has more local refit variation than well-fit,Overfit ICE SD 0.014973; well-fit 0.016273.,Not observed in these refits.
+burgers,Underfit has suppressed curvature and interaction structure,Curvature ratio 0.453; interaction strength ratio 0.229.,Observed relative to the simulator.
+burgers,Overfit curves are spiky and have inflated interaction divergence,Curvature ratio 0.77; interaction strength ratio 0.829.,No marked inflation in the refit means on the shared grid; this does not prove smoothness at every scale.
+burgers,Well-fit has better physical alignment than overfit,Well-fit law residual 0.025134; overfit 0.03108.,Observed for the specified physical-law probe.
+oscillator,Underfit has stable global explanations across refits,Underfit PDP SD 0.19553; well-fit 0.000428; overfit 0.0024663.,Not observed: underfit had the largest refit dispersion.
+oscillator,Overfit has more local refit variation than well-fit,Overfit ICE SD 0.006338; well-fit 0.00075622.,Observed in these refits.
+oscillator,Underfit has suppressed curvature and interaction structure,Curvature ratio 0.65; interaction strength ratio 0.585.,Observed relative to the simulator.
+oscillator,Overfit curves are spiky and have inflated interaction divergence,Curvature ratio 1.01; interaction strength ratio 0.995.,No marked inflation in the refit means on the shared grid; this does not prove smoothness at every scale.
+oscillator,Well-fit has better physical alignment than overfit,Well-fit law residual 0.00027046; overfit 0.0039676.,Observed for the specified physical-law probe.
