@@ -125,8 +125,5 @@ The comparison concerns fit within each physical system. Different architectures
 
 ## AI statement
 
-OpenAI Codex was used to implement the simulators, neural operators, training and explanation pipeline, automated tests, figures, README and presentation. Automated checks compare simulator outputs against independent numerical solvers, verify causal convolution and gradient propagation, and check explanation formulas on a known linear function. Training and explanation results are computed from actual runs. The repository owner should review the code, findings and slides and adapt this statement to reflect their own checks before submitting.
+Codex was used to implement the simulators, neural operators, training and tests. Automated checks compare simulator outputs against independent numerical solvers, verify causal convolution and gradient propagation, and check explanation formulas on a known linear function. Training and explanation results are computed from actual runs. 
 
-## Submission
-
-The exercise requires a pull request from this fork to `automl-edu/iML26-27-Exercise-2` before November 29, 2026, 23:59, including code, this README and `presentation/presentation.pdf`. Review the generated findings and AI statement before submitting.
